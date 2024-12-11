@@ -2,11 +2,14 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-class BsplineFit:
-    def __init__(self, points, order, interval):
-        self.control_points = points
+class BsplineFitter:
+    def __init__(self, control_points, order, interval):
+        self.update(control_points, order, interval)
+
+    def update(self, control_points, order, interval):
+        self.control_points = control_points
         self.p = order
-        self.n = points.shape[0] - 1
+        self.n = self.control_points.shape[0] - 1
         self.m = self.n + self.p + 1
         self.interval = interval
         self.u = self._generate_knot_vector()
@@ -71,81 +74,86 @@ class BsplineFit:
 
     def get_derivative(self):
         ctp = self.get_derivative_control_points()
-        derivative = BsplineFit(ctp, self.p - 1, self.interval)
+        derivative = BsplineFitter(ctp, self.p - 1, self.interval)
         derivative.set_knot(self.u[1:-1])
         return derivative
 
-    def parameterize_to_bspline(self, ts, point_set, start_end_derivative):
+    def parameterize_to_bspline(self, point_set, start_end_derivative, order, interval):
         K = len(point_set)
         dims = point_set[0].shape[0]
 
         condition_nums = K + start_end_derivative.shape[0]
-        ctrl_pts_nums = self.p + K - 1
+        ctrl_pts_nums = order + K - 1
 
         A = np.zeros((condition_nums, ctrl_pts_nums))
 
-        if self.p == 2:
+        if order == 2:
             prow = np.array([1, 1]) * (1 / 2.0) * 1
-            vrow = np.array([-2, 2]) * (1 / 2.0) * (1 / ts)
+            vrow = np.array([-2, 2]) * (1 / 2.0) * (1 / interval)
             for i in range(K):
-                A[i, i : i + self.p] = prow
-            A[K, : self.p] = vrow
+                A[i, i : i + order] = prow
+            A[K, :order] = vrow
             A[K + 1, K - 1 : ctrl_pts_nums] = vrow
 
-        if self.p == 3:
+        if order == 3:
             prow = np.array([1, 4, 1]) * (1 / 6.0) * 1
-            vrow = np.array([-3, 0, 3]) * (1 / 6.0) * (1 / ts)
-            arow = np.array([3, -6, 3]) * (1 / 6.0) * (2 / ts / ts)
+            vrow = np.array([-3, 0, 3]) * (1 / 6.0) * (1 / interval)
+            arow = np.array([3, -6, 3]) * (1 / 6.0) * (2 / interval / interval)
             for i in range(K):
-                A[i, i : i + self.p] = prow
-            A[K, : self.p] = vrow
+                A[i, i : i + order] = prow
+            A[K, :order] = vrow
             A[K + 1, K - 1 : ctrl_pts_nums] = vrow
-            A[K + 2, : self.p] = arow
+            A[K + 2, :order] = arow
             A[K + 3, K - 1 : ctrl_pts_nums] = arow
 
-        elif self.p == 4:
+        elif order == 4:
             prow = np.array([1, 11, 11, 1]) * (1 / 24.0) * 1
-            vrow = np.array([-4, -12, 12, 4]) * (1 / 24.0) * (1 / ts)
-            arow = np.array([6, -6, -6, 6]) * (1 / 24.0) * (2 / ts / ts)
-            jrow = np.array([-4, 12, -12, 4]) * (1 / 24.0) * (6 / ts / ts / ts)
+            vrow = np.array([-4, -12, 12, 4]) * (1 / 24.0) * (1 / interval)
+            arow = np.array([6, -6, -6, 6]) * (1 / 24.0) * (2 / interval / interval)
+            jrow = (
+                np.array([-4, 12, -12, 4])
+                * (1 / 24.0)
+                * (6 / interval / interval / interval)
+            )
             for i in range(K):
-                A[i, i : i + self.p] = prow
-            A[K, : self.p] = vrow
+                A[i, i : i + order] = prow
+            A[K, :order] = vrow
             A[K + 1, K - 1 : ctrl_pts_nums] = vrow
-            A[K + 2, : self.p] = arow
+            A[K + 2, :order] = arow
             A[K + 3, K - 1 : ctrl_pts_nums] = arow
-            A[K + 4, : self.p] = jrow
+            A[K + 4, :order] = jrow
             A[K + 5, K - 1 : ctrl_pts_nums] = jrow
 
-        b_all = np.zeros((condition_nums, dims))
-        b_all[:K, :] = point_set[:K, :]  # positions
-        b_all[K:condition_nums, :] = start_end_derivative  # derivatives
+        B = np.zeros((condition_nums, dims))
+        B[:K, :] = point_set[:K, :]  # positions
+        B[K:condition_nums, :] = start_end_derivative  # derivatives
 
-        ctrl_pts = np.linalg.lstsq(A, b_all, rcond=None)[0]
+        ctrl_pts = np.linalg.lstsq(A, B, rcond=None)[0]
+        self.update(ctrl_pts, order, interval)
         return ctrl_pts
 
     def generate_path(self, dt):
         duration = self.u[self.m - self.p] - self.u[self.p]
-        return [
-            self.evaluate_de_boor_t(tc) for tc in np.arange(0.0, duration + 1e-3, dt)
-        ]
+        path = np.array(
+            [self.evaluate_de_boor_t(tc) for tc in np.arange(0.0, duration + 1e-3, dt)]
+        )
+        return path
 
 
 def test1():
     control_points = np.array([[0, 0], [1, 2], [3, 3], [4, 0], [5, 2]])
-    spline = BsplineFit(control_points, 3, 1.0)
 
-    control_points = spline.get_control_point()
+    fitter = BsplineFitter(control_points, 3, 1.0)
+    control_points = fitter.get_control_point()
+    path = fitter.generate_path(0.1)
+
     plt.plot(control_points[:, 0], control_points[:, 1], "ro-", label="Control Points")
-
-    path = spline.generate_path(0.1)
-    path = np.array(path)
     plt.plot(path[:, 0], path[:, 1], "b-", label="B-Spline Path")
 
     plt.legend()
     plt.xlabel("X")
     plt.ylabel("Y")
-    plt.title("Non-Uniform B-Spline Curve")
+    plt.title("test1")
     plt.grid(True)
     plt.show()
 
@@ -176,36 +184,32 @@ def test2():
         ]
     )
 
-    ts = 0.4
+    interval = 0.4
     order = 3
 
     control_points = np.array([[]])
-    spline = BsplineFit(control_points, order, ts)
-
-    control_points = spline.parameterize_to_bspline(ts, point_set, start_end_derivative)
+    fitter = BsplineFitter(control_points, order, interval)
+    control_points = fitter.parameterize_to_bspline(
+        point_set, start_end_derivative, order, interval
+    )
     print("control_points:\n", control_points)
-
-    spline_with_control_points = BsplineFit(control_points, order, ts)
-    path = spline_with_control_points.generate_path(0.05)
-
-    point_set = np.array(point_set)
-    path = np.array(path)
+    path = fitter.generate_path(0.05)
 
     plt.figure(figsize=(8, 6))
-    plt.plot(point_set[:, 0], point_set[:, 1], "go", label="pts", markersize=8)
+    plt.plot(point_set[:, 0], point_set[:, 1], "go", label="Data Points", markersize=8)
     plt.plot(
         control_points[:, 0],
         control_points[:, 1],
         "r*",
-        label="ctrl pts",
+        label="Control Points",
         markersize=8,
     )
-    plt.plot(path[:, 0], path[:, 1], "b-", label="bspline")
+    plt.plot(path[:, 0], path[:, 1], "b-", label="B-Spline Path")
 
+    plt.legend()
     plt.xlabel("X")
     plt.ylabel("Y")
-    plt.legend()
-    plt.title("B-Spline test")
+    plt.title("test2")
     plt.grid(True)
     plt.show()
 
