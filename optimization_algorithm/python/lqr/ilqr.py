@@ -57,6 +57,11 @@ class ILqr:
             V_x = np.zeros(self.n_state + 1)
             V_xx = np.zeros((self.n_state + 1, self.n_state + 1))
 
+        # 2.Forward pass
+
+        # 3.Output trajectory
+        self.output_traj()
+
     def output_traj(self):
         for x, u in zip(self.x_traj[:-1], self.u_traj):
             formatted_x = np.array2string(
@@ -73,7 +78,5 @@ class ILqr:
 
 
 if __name__ == "__main__":
-    lqr = Lqr()
-    lqr.solve_lqr()
-    lqr.apply_lqr_control()
-    lqr.output_traj()
+    lqr = ILqr()
+    lqr.solve_ilqr()
