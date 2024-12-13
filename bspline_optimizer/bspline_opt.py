@@ -21,7 +21,7 @@ class OccMap:
 
 class BsplineOptimizer:
     def __init__(self, ctrl_pts, om, conf, is_end_fix):
-        self.is_log_debug = True
+        self.is_log_debug = False
 
         self.om = om
         self.conf = conf
@@ -37,7 +37,7 @@ class BsplineOptimizer:
         )
 
         print(
-            f"bspline info: pt_dim={self.pt_dim}, pt_num={self.pt_num}, order={self.order}, end_fix={self.is_end_fix}, var_num={self.variable_num}"
+            f"bspline info: pt_dim({self.pt_dim}), pt_num({self.pt_num}), order({self.order}), is_end_fix({self.is_end_fix}), variable_num({self.variable_num})"
         )
 
         self.guide_pts = self.ctrl_pts.copy()
@@ -63,8 +63,7 @@ class BsplineOptimizer:
         # opt
         self.opt = nlopt.opt(nlopt.LD_LBFGS, self.variable_num)
         self.opt.set_min_objective(self.cost_function)
-        self.opt.set_maxeval(10)
-        self.opt.set_maxtime(0.05)
+        self.opt.set_maxeval(50)
         self.opt.set_xtol_rel(1e-5)
         self.opt.set_lower_bounds(self.lb)
         self.opt.set_upper_bounds(self.ub)
@@ -75,7 +74,7 @@ class BsplineOptimizer:
         try:
             self.final_solution = self.opt.optimize(self.init_solution)
             print(
-                f"min_cost({self.opt.last_optimum_value()}), code({self.opt.last_optimize_result()}), final_solution({self.variable_num}):\n{self.final_solution}"
+                f"min_cost({self.opt.last_optimum_value():.3f}), code({self.opt.last_optimize_result()}), final_solution({self.variable_num}):\n{self.final_solution}"
             )
             for i in range(self.order, self.end_idx):
                 offset = self.pt_dim * (i - self.order)
@@ -83,7 +82,7 @@ class BsplineOptimizer:
                     self.best_solution[offset : offset + self.pt_dim]
                 )
         except Exception as e:
-            print("nlopt exception")
+            print(f"NLopt exception: {str(e)}")
 
         return self.ctrl_pts
 
@@ -136,7 +135,7 @@ class BsplineOptimizer:
 
         calc_cost("calc_smoothness_cost", "SMOOTHNESS", self.conf.w_smoothness)
         # calc_cost("calc_distance_cost", "DISTANCE", self.conf.w_distance)
-        # calc_cost("calc_guide_cost", "GUIDE", self.conf.w_guide)
+        calc_cost("calc_guide_cost", "GUIDE", self.conf.w_guide)
         calc_cost("calc_endpoint_cost", "ENDPOINT", self.conf.w_endpoint)
 
         print(
@@ -145,7 +144,7 @@ class BsplineOptimizer:
         )
 
     def calc_smoothness_cost(self, q, cost, gradient):
-        s_str = f"\nCalcSmoothnessCost cost:{cost[0]:.3f}"
+        s_str = f"\nCalcSmoothnessCost:"
         for i in range(self.pt_num - self.order):
             jerk = q[i + 3] - 3 * q[i + 2] + 3 * q[i + 1] - q[i]
             cur_cost = jerk.dot(jerk)
@@ -156,11 +155,11 @@ class BsplineOptimizer:
             gradient[i + 1] += 3.0 * temp_j
             gradient[i + 2] += -3.0 * temp_j
             gradient[i + 3] += temp_j
-        # if self.is_log_debug:
-        #     print(s_str)
+        if self.is_log_debug:
+            print(s_str)
 
     def calc_distance_cost(self, q, cost, gradient):
-        d_str = f"\nCalcDistanceCost cost:{cost[0]:.3f}, safe_dist:{self.conf.safe_dist:.3f}"
+        d_str = f"\nCalcDistanceCost safe_dist:{self.conf.safe_dist:.3f}"
         for i in range(self.order, self.end_idx):
             dist = self.om.get_point_min_distance_to_obstacle((q[i][0], q[i][1]))
             dist_grad_ad2 = self.om.get_point_gradient_direction((q[i][0], q[i][1]))
@@ -170,24 +169,24 @@ class BsplineOptimizer:
             if dist < self.conf.safe_dist:
                 cost += (dist - self.conf.safe_dist) ** 2
                 gradient[i] += 2.0 * (dist - self.conf.safe_dist) * dist_grad
-        # if self.is_log_debug:
-        #     print(d_str)
+        if self.is_log_debug:
+            print(d_str)
 
     def calc_guide_cost(self, q, cost, gradient):
-        g_str = f"\nCalcGuideCost cost:{cost[0]:.3f}"
+        g_str = f"\nCalcGuideCost:"
         for i in range(self.order, self.pt_num - self.order):
             delta = q[i] - self.guide_pts[i]
             cur_cost = delta.dot(delta)
             g_str += f"\n\tcp:{i}, delta:({delta[0]:.3f}, {delta[1]:.3f}), dis:{cur_cost:.3f}"
             cost += cur_cost
             gradient[i] += 2 * delta
-        # if self.is_log_debug:
-        #     print(g_str)
+        if self.is_log_debug:
+            print(g_str)
 
     def calc_endpoint_cost(self, q, cost, gradient):
         if not self.is_end_fix:
             return
-        e_str = f"\nCalcEndpointCost cost:{cost[0]:.3f}"
+        e_str = f"\nCalcEndpointCost:"
         cp_3 = self.ctrl_pts[self.pt_num - 3]
         cp_2 = self.ctrl_pts[self.pt_num - 2]
         cp_1 = self.ctrl_pts[self.pt_num - 1]
@@ -203,8 +202,8 @@ class BsplineOptimizer:
         gradient[self.pt_num - 3] += 2 * dq * (1 / 6.0)
         gradient[self.pt_num - 2] += 2 * dq * (4 / 6.0)
         gradient[self.pt_num - 1] += 2 * dq * (1 / 6.0)
-        # if self.is_log_debug:
-        #     print(e_str)
+        if self.is_log_debug:
+            print(e_str)
 
 
 def test():
