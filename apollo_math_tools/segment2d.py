@@ -20,14 +20,17 @@ def is_within(val, bound1, bound2):
 
 class Segment2d:
 
-    def __init__(self, start=None, end=None):
-        if start is None and end is None:
+    def __init__(self, params=None):
+        if params is None:
             self._start = Vec2d(1, 0)
             self._end = Vec2d(1, 0)
             self._unit_direction = Vec2d(1, 0)
             self._length = 0.0
             self._heading = 0.0
-        else:
+        elif isinstance(params, tuple) and len(params) == 2:
+            start, end = params
+            if not isinstance(start, Vec2d) or not isinstance(end, Vec2d):
+                raise ValueError("invalid types")
             self._start = start
             self._end = end
             dx = end.x() - start.x()
@@ -38,6 +41,8 @@ class Segment2d:
             else:
                 self._unit_direction = Vec2d(dx / self._length, dy / self._length)
             self._heading = self._unit_direction.angle()
+        else:
+            raise ValueError("invalid params")
 
     def start(self):
         return self._start

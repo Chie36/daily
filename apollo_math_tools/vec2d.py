@@ -103,7 +103,7 @@ class Vec2d:
         self._x = self._x * math.cos(angle) - self._y * math.sin(angle)
         self._y = tmp_x * math.sin(angle) + self._y * math.cos(angle)
 
-    def __str__(self):
+    def debug_string(self):
         return f"vec2d ( x = {self._x:.3f}  y = {self._y:.3f} )"
 
 

@@ -115,7 +115,7 @@ class Vec3d:
         new_z = self._y * math.sin(angle) + self._z * math.cos(angle)
         return Vec3d(self._x, new_y, new_z)
 
-    def __str__(self):
+    def debug_string(self):
         return f"vec3d ( x = {self._x:.3f}  y = {self._y:.3f}  z = {self._z:.3f} )"
 
 
