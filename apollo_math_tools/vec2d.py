@@ -98,10 +98,21 @@ class Vec2d:
             self._x * math.sin(angle) + self._y * math.cos(angle),
         )
 
+    def rotate_clockwise(self, angle):
+        return Vec2d(
+            self._x * math.cos(angle) + self._y * math.sin(angle),
+            -self._x * math.sin(angle) + self._y * math.cos(angle),
+        )
+
     def self_rotate(self, angle):
         tmp_x = self._x
         self._x = self._x * math.cos(angle) - self._y * math.sin(angle)
         self._y = tmp_x * math.sin(angle) + self._y * math.cos(angle)
+
+    def self_rotate_clockwise(self, angle):
+        tmp_x = self._x
+        self._x = self._x * math.cos(angle) + self._y * math.sin(angle)
+        self._y = -tmp_x * math.sin(angle) + self._y * math.cos(angle)
 
     def debug_string(self):
         return f"vec2d ( x = {self._x:.3f}  y = {self._y:.3f} )"

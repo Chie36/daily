@@ -111,9 +111,10 @@ class AABox2d:
         return [rb, rt, lt, lb]
 
     def is_point_in(self, point):
+        vec = Vec2d(point.x() - self._center.x(), point.y() - self._center.y())
         return (
-            abs(point.x() - self._center.x()) <= self._half_length + K_MATH_EPS
-            and abs(point.y() - self._center.y()) <= self._half_width + K_MATH_EPS
+            abs(vec.x()) <= self._half_length + K_MATH_EPS
+            and abs(vec.y()) <= self._half_width + K_MATH_EPS
         )
 
     def is_point_on_boundary(self, point):

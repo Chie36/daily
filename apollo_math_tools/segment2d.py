@@ -157,26 +157,26 @@ class Segment2d:
 def test1():
     start = Vec2d(0, 0)
     end = Vec2d(5, 5)
-    line = Segment2d(start, end)
+    line = Segment2d((start, end))
 
     points = [Vec2d(4, 3), Vec2d(6, 8), Vec2d(-1, 1)]
     for idx, pt in enumerate(points, 1):
-        print(f"Vec2d {idx}: ({pt})")
+        print(f"Vec2d {idx}: ({pt.debug_string()})")
 
         distance = line.distance_to(pt)
         print(f"Distance to line segment: {distance:.3f}")
 
         distance, nearest_point = line.distance_to_with_nearest_point(pt)
         print(f"Distance to line segment (with nearest point): {distance:.3f}")
-        print(f"Nearest point on line segment: ({nearest_point})\n")
+        print(f"Nearest point on line segment: ({nearest_point.debug_string()})\n")
 
         distance_sqr, nearest_point = line.distance_sqr_to_with_nearest_point(pt)
         print(f"Distance sqr to line segment (with nearest point): {distance_sqr:.3f}")
-        print(f"Nearest point on line segment: ({nearest_point})\n")
+        print(f"Nearest point on line segment: ({nearest_point.debug_string()})\n")
 
         distance, foot_point = line.get_perpendicular_foot(pt)
         print(f"Distance to line segment (with nearest point): {distance:.3f}")
-        print(f"Foot point on line segment: ({foot_point})\n")
+        print(f"Foot point on line segment: ({foot_point.debug_string()})\n")
 
 
 def test2():
@@ -185,24 +185,34 @@ def test2():
     B = Vec2d(5, 5)
     C = Vec2d(1, 5)
     D = Vec2d(5, 1)
-    line1 = Segment2d(A, B)
-    line2 = Segment2d(C, D)
+    line1 = Segment2d((A, B))
+    line2 = Segment2d((C, D))
     intersection = line1.get_intersect(line2)
 
-    print(f"Test 1 - Intersection: {intersection}, {line1.has_intersect(line2)}")
+    if intersection is not None:
+        print(
+            f"Test 1 - Intersection: {intersection.debug_string()}, {line1.has_intersect(line2)}"
+        )
+    else:
+        print("No intersection")
 
     # Test 2: No intersection of two line segments
     A2 = Vec2d(1, 1)
     B2 = Vec2d(3, 1)
     C2 = Vec2d(5, 5)
     D2 = Vec2d(6, 6)
-    line3 = Segment2d(A2, B2)
-    line4 = Segment2d(C2, D2)
+    line3 = Segment2d((A2, B2))
+    line4 = Segment2d((C2, D2))
     intersection2 = line3.get_intersect(line4)
 
-    print(f"Test 2 - Intersection: {intersection2}, {line3.has_intersect(line4)}")
+    if intersection2 is not None:
+        print(
+            f"Test 2 - Intersection: {intersection2.debug_string()}, {line3.has_intersect(line4)}"
+        )
+    else:
+        print("No intersection")
 
 
 if __name__ == "__main__":
-    test1()
-    # test2()
+    # test1()
+    test2()
