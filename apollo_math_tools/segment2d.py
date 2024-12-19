@@ -37,6 +37,9 @@ class Segment2d:
     def end(self):
         return self._end
 
+    def center(self):
+        return (self._start + self._end) * 0.5
+
     def unit_direction(self):
         return self._unit_direction
 
