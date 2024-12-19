@@ -1,21 +1,8 @@
 import math
 from vec2d import Vec2d
+from util import cross_prod, is_within
 
 K_MATH_EPS = 1e-10
-
-
-def cross_prod(point1, point2, point3):
-    return (point2 - point1).cross_prod(point3 - point1)
-
-
-def inner_prod(point1, point2, point3):
-    return (point2 - point1).inner_prod(point3 - point1)
-
-
-def is_within(val, bound1, bound2):
-    if bound1 > bound2:
-        bound1, bound2 = bound2, bound1
-    return val >= bound1 - K_MATH_EPS and val <= bound2 + K_MATH_EPS
 
 
 class Segment2d:
