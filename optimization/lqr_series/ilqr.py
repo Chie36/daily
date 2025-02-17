@@ -72,6 +72,7 @@ class ILqr:
 
         for i in range(iterations):
             # 1.Backward pass
+            self.get_system_derivative()
             self.get_cost_derivative()
 
             V_x = self.L_x_seq[-1]
