@@ -15,8 +15,20 @@ class Config:
 
 
 class OccMap:
-    def __init__(self):
-        self.map_ = np.zeros((100, 100))
+
+    def __init__(self, map, resolution, obstacle_vec, bounds):
+        self.map = map
+        self.resolution = resolution
+        self.obstacle_vec = obstacle_vec
+        self.bounds = bounds
+        self.limit_bound()
+
+    def limit_bound(self):
+        pass
+
+    def build_bin_map(self, bin_size):
+        self.obstacle_vec = np.zeros((self.map.shape[0], self.map.shape[1]))
+        self.bounds = np.array([0, self.map.shape[0], 0, self.map.shape[1]])
 
 
 class BsplineOptimizer:
@@ -245,7 +257,12 @@ def test():
         point_set, start_end_derivative, order, interval
     )
 
-    optimizer = BsplineOptimizer(control_points_fit, OccMap(), Config(), False)
+    optimizer = BsplineOptimizer(
+        control_points_fit,
+        OccMap(None, None, 0.2),
+        Config(),
+        False,
+    )
     control_points_opt = optimizer.optimize()
 
     plt.figure(figsize=(8, 6))
