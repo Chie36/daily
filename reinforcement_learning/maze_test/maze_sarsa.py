@@ -172,7 +172,7 @@ if __name__ == "__main__":
         )
         if epoch > 100 or update < 1e-2:
             gif_path = os.path.join(
-                os.path.dirname(os.path.abspath(__file__)), "maze_sarsa.gif"
+                os.path.dirname(os.path.abspath(__file__)), "gif/maze_sarsa.gif"
             )
             vis(s_a_history, gif_path)
 

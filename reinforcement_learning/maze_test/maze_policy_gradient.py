@@ -174,11 +174,13 @@ if __name__ == "__main__":
             if terminated:
                 break
 
+        # 这里的策略梯度更新，根据统计历史信息作出的更新
         # 更新 theta
         agent.update_theta(s_a_history)
         pi = agent.pi.copy()
         # 更新 pi
         agent.update_pi()
+
         delta = np.sum(np.abs(agent.pi - pi))
         # print(
         #     "delta:{}, s_a_history({}):{}".format(delta, len(s_a_history), s_a_history)
@@ -186,7 +188,8 @@ if __name__ == "__main__":
 
         if delta < stop_eps:
             gif_path = os.path.join(
-                os.path.dirname(os.path.abspath(__file__)), "maze_policy_gradient.gif"
+                os.path.dirname(os.path.abspath(__file__)),
+                "gif/maze_policy_gradient.gif",
             )
             vis(s_a_history, gif_path)
             print(

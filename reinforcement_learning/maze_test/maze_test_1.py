@@ -88,17 +88,17 @@ if __name__ == "__main__":
     pi = cvt_theta_to_pi(theta_0)
 
     state = 0
-    state_his = [state]
-    action_his = []
+    state_history = [state]
+    action_history = []
     while True:
         action = np.random.choice([0, 1, 2, 3], p=pi[state, :])
         state = step(state, action)
-        action_his.append(action)
-        state_his.append(state)
+        action_history.append(action)
+        state_history.append(state)
         if state == 8:
             break
-    print("state_his: ", state_his)
-    print("action_his: ", action_his)
+    print("state_his: ", state_history)
+    print("action_his: ", action_history)
 
     def init():
         line.set_data([], [])
@@ -106,16 +106,21 @@ if __name__ == "__main__":
 
     def animate(i):
         # 每个状态在图中对应的坐标
-        state = state_his[i]
+        state = state_history[i]
         x = (state % 3) + 0.5
         y = 2.5 - int(state / 3)
         line.set_data(x, y)
 
     anim = animation.FuncAnimation(
-        fig, animate, init_func=init, frames=len(state_his), interval=200, repeat=False
+        fig,
+        animate,
+        init_func=init,
+        frames=len(state_history),
+        interval=200,
+        repeat=False,
     )
     gif_path = os.path.join(
-        os.path.dirname(os.path.abspath(__file__)), "maze_test_1.gif"
+        os.path.dirname(os.path.abspath(__file__)), "gif/maze_test_1.gif"
     )
     anim.save(gif_path, writer="imagemagick")
 

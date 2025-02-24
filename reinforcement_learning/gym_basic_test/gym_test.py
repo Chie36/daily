@@ -17,7 +17,9 @@ def display_frames_to_video(frames):
     anim = animation.FuncAnimation(
         plt.gcf(), animate_func, frames=frames[1:], interval=50
     )
-    gif_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "gym_test.gif")
+    gif_path = os.path.join(
+        os.path.dirname(os.path.abspath(__file__)), "gif/gym_test.gif"
+    )
     anim.save(gif_path, writer="imagemagick")
 
 

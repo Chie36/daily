@@ -118,7 +118,7 @@ def vis(state_history):
         repeat=False,
     )
     gif_path = os.path.join(
-        os.path.dirname(os.path.abspath(__file__)), "maze_test_2.gif"
+        os.path.dirname(os.path.abspath(__file__)), "gif/maze_test_2.gif"
     )
     anim.save(gif_path, writer="imagemagick")
 

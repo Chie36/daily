@@ -166,7 +166,6 @@ if __name__ == "__main__":
             s_next, reward, terminated, _, _ = env.step(a)
             s_a_history.append([s_next, np.nan])
             a_next = np.nan if terminated else agent.get_action(s_next)
-            # agent.sarsa(s, a, reward, s_next, a_next)
             agent.q_learing(s, a, reward, s_next)
             if terminated:
                 break
@@ -182,7 +181,7 @@ if __name__ == "__main__":
         )
         if epoch > 100 or update < 1e-2:
             gif_path = os.path.join(
-                os.path.dirname(os.path.abspath(__file__)), "maze_q_learning.gif"
+                os.path.dirname(os.path.abspath(__file__)), "gif/maze_q_learning.gif"
             )
             vis(s_a_history, gif_path)
 
