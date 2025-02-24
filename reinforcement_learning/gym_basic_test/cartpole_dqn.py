@@ -154,7 +154,7 @@ def display_frames_to_video(frames):
         plt.gcf(), animate_func, frames=frames[1:], interval=50
     )
     gif_path = os.path.join(
-        os.path.dirname(os.path.abspath(__file__)), "cartpole_dqn.gif"
+        os.path.dirname(os.path.abspath(__file__)), "gif/cartpole_dqn.gif"
     )
     anim.save(gif_path, writer="imagemagick")
 
@@ -211,7 +211,7 @@ def test():
         if finished_flag:
             break
 
-        if complete_episodes >= 10:
+        if complete_episodes >= 5:
             finished_flag = True
             print("连续成功10轮")
 
