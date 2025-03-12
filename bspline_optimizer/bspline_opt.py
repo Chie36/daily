@@ -16,19 +16,14 @@ class Config:
 
 class OccMap:
 
-    def __init__(self, map, resolution, obstacle_vec, bounds):
-        self.map = map
-        self.resolution = resolution
-        self.obstacle_vec = obstacle_vec
-        self.bounds = bounds
-        self.limit_bound()
-
-    def limit_bound(self):
+    def __init__(self):
         pass
 
-    def build_bin_map(self, bin_size):
-        self.obstacle_vec = np.zeros((self.map.shape[0], self.map.shape[1]))
-        self.bounds = np.array([0, self.map.shape[0], 0, self.map.shape[1]])
+    def get_point_distance(self, pt):
+        pass
+
+    def get_point_gradient_direction(self, pt):
+        pass
 
 
 class BsplineOptimizer:
@@ -173,7 +168,7 @@ class BsplineOptimizer:
     def calc_distance_cost(self, q, cost, gradient):
         d_str = f"\nCalcDistanceCost safe_dist:{self.conf.safe_dist:.3f}"
         for i in range(self.order, self.end_idx):
-            dist = self.om.get_point_min_distance_to_obstacle((q[i][0], q[i][1]))
+            dist = self.om.get_point_distance((q[i][0], q[i][1]))
             dist_grad_ad2 = self.om.get_point_gradient_direction((q[i][0], q[i][1]))
             dist_grad = np.array(dist_grad_ad2)
             dist_grad /= np.linalg.norm(dist_grad)
@@ -259,7 +254,7 @@ def test():
 
     optimizer = BsplineOptimizer(
         control_points_fit,
-        OccMap(None, None, 0.2),
+        OccMap(),
         Config(),
         False,
     )
